@@ -4,7 +4,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/B143KC47/deep-research-skill?style=social)](https://github.com/B143KC47/deep-research-skill/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Language:** English | [简体中文](docs/README.zh-CN.md)
+**Language:** English | [简体中文](docs/README.zh-CN.md) | [Español](docs/README.es.md) | [日本語](docs/README.ja.md) | [한국어](docs/README.ko.md)
 
 Adaptive, auditable deep research for AI agents. This skill helps agents move
 from broad discovery to cited synthesis while keeping sources, claims,
@@ -128,6 +128,9 @@ supported and remaining gaps are explicit.
 │   └── openai.yaml
 ├── docs/
 │   └── README.zh-CN.md
+│   └── README.es.md
+│   └── README.ja.md
+│   └── README.ko.md
 ├── references/
 │   ├── research-protocol.md
 │   ├── source-quality.md
