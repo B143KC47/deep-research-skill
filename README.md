@@ -1,9 +1,14 @@
 # Deep Research
 
+[![CI](https://github.com/B143KC47/deep-research-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/B143KC47/deep-research-skill/actions/workflows/ci.yml)
+[![GitHub stars](https://img.shields.io/github/stars/B143KC47/deep-research-skill?style=social)](https://github.com/B143KC47/deep-research-skill/stargazers)
+
 Adaptive, auditable research workflow for AI agents. This repository packages a
 Codex-compatible skill, reference protocols, agent metadata, and a small
 standard-library ledger tool for tracking research hops, sources, evidence, and
 uncertainty.
+
+GitHub: [B143KC47/deep-research-skill](https://github.com/B143KC47/deep-research-skill)
 
 ## What This Is
 
@@ -129,6 +134,20 @@ python -m py_compile scripts/research_ledger.py
 For Codex-style skill usage, place this directory under your skills directory
 and keep `SKILL.md` at the repository root. The skill body references files by
 relative path, so the directory structure should stay intact.
+
+Install from GitHub with the Codex skill installer:
+
+```bash
+python "$CODEX_HOME/skills/.system/skill-installer/scripts/install-skill-from-github.py" \
+  --repo B143KC47/deep-research-skill \
+  --path .
+```
+
+Or clone directly:
+
+```bash
+git clone https://github.com/B143KC47/deep-research-skill.git
+```
 
 ## License
 

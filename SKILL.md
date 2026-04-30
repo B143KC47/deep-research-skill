@@ -1,6 +1,16 @@
 ---
 name: deep-research
 description: use for adaptive deep research, broad but accurate information gathering, literature review, github and project due diligence, source graph investigation, cited reports, claim verification, or decisions that require current sources, cross-checking, counterevidence, and synthesis across web pages, academic papers, official docs, repositories, datasets, local files, and conflicting perspectives. do not use for simple lookups answerable from one or two obvious sources.
+version: 1.0.0
+metadata:
+  openclaw:
+    homepage: https://github.com/B143KC47/deep-research-skill
+    emoji: "🔎"
+    requires:
+      anyBins:
+        - python
+        - python3
+        - py
 ---
 
 # Deep Research
