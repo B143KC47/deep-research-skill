@@ -2,49 +2,49 @@
 
 [![CI](https://github.com/B143KC47/deep-research-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/B143KC47/deep-research-skill/actions/workflows/ci.yml)
 [![GitHub stars](https://img.shields.io/github/stars/B143KC47/deep-research-skill?style=social)](https://github.com/B143KC47/deep-research-skill/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Adaptive, auditable research workflow for AI agents. This repository packages a
-Codex-compatible skill, reference protocols, agent metadata, and a small
-standard-library ledger tool for tracking research hops, sources, evidence, and
-uncertainty.
+**Language:** English | [简体中文](docs/README.zh-CN.md)
 
-GitHub: [B143KC47/deep-research-skill](https://github.com/B143KC47/deep-research-skill)
+Adaptive, auditable deep research for AI agents. This skill helps agents move
+from broad discovery to cited synthesis while keeping sources, claims,
+counterevidence, and uncertainty traceable.
 
-## What This Is
+> Built for research memos, literature reviews, GitHub due diligence, source
+> verification, current technical research, and decisions that need more than a
+> quick lookup.
 
-Deep Research helps an agent answer questions that need more than a quick lookup:
-literature reviews, GitHub project due diligence, source verification, current
-technical research, cited reports, and decisions that require counterevidence.
+## Why Use It
 
-The workflow is intentionally evidence-first:
+- **Evidence ledger**: track research hops, sources, claims, and evidence IDs.
+- **Adaptive protocol**: broaden, deepen, verify, or stop based on what the
+  evidence changes.
+- **Source-quality checks**: separate primary sources, context, weak claims,
+  counterevidence, and stale facts.
+- **Portable CLI**: the ledger tool uses only the Python standard library.
+- **Marketplace ready**: includes `SKILL.md`, agent metadata, references, tests,
+  and submission notes.
 
-- plan the information need;
-- retrieve or inspect sources;
-- record meaningful research hops;
-- attach reusable evidence IDs to claims;
-- check source quality and contradictions;
-- synthesize with explicit uncertainty.
+## Install
 
-## Repository Layout
+Install with `skills.sh`:
 
-```text
-.
-├── SKILL.md                         # Skill entrypoint and operating guide
-├── agents/
-│   └── openai.yaml                  # Agent display metadata
-├── references/
-│   ├── bibliography.md              # Design rationale references
-│   ├── evaluation.md                # Run audit checklist
-│   ├── openclaw-install.md          # OpenClaw installation notes
-│   ├── project-and-paper-patterns.md# GitHub/paper inspection patterns
-│   ├── query-playbook.md            # Search query patterns
-│   ├── report-template.md           # Final report template
-│   ├── research-protocol.md         # Adaptive research protocol
-│   └── source-quality.md            # Source credibility rubric
-├── scripts/
-│   └── research_ledger.py           # Research run state manager
-└── tests/
-    └── test_research_ledger.py      # Standard-library regression tests
+```bash
+npx skills add B143KC47/deep-research-skill
+```
+
+Install with the Codex skill installer:
+
+```bash
+python "$CODEX_HOME/skills/.system/skill-installer/scripts/install-skill-from-github.py" \
+  --repo B143KC47/deep-research-skill \
+  --path .
+```
+
+Clone directly:
+
+```bash
+git clone https://github.com/B143KC47/deep-research-skill.git
 ```
 
 ## Quick Start
@@ -59,7 +59,7 @@ python scripts/research_ledger.py init \
   --deliverable "evidence-backed recommendation"
 ```
 
-Add a research hop:
+Record a meaningful research hop:
 
 ```bash
 python scripts/research_ledger.py add-hop \
@@ -72,7 +72,7 @@ python scripts/research_ledger.py add-hop \
   --next-questions "Check implementation evidence and limitations"
 ```
 
-Add evidence:
+Attach evidence to a claim:
 
 ```bash
 python scripts/research_ledger.py add-evidence \
@@ -89,33 +89,59 @@ python scripts/research_ledger.py add-evidence \
   --quote-or-locator "Docs: deployment section"
 ```
 
-Check status or lint the run before writing the final report:
+Check readiness before writing the final report:
 
 ```bash
 python scripts/research_ledger.py status --run-dir research_runs/<run-dir>
 python scripts/research_ledger.py lint --run-dir research_runs/<run-dir>
 ```
 
+## Research Workflow
+
+| Phase | What the agent does | Output |
+|---|---|---|
+| Frame | Restate the question, decision, scope, and freshness needs. | Research plan |
+| Map | Split the topic into aspects, source classes, and unknowns. | Aspect map |
+| Seed | Search several distinct routes before diving deep. | Initial source graph |
+| Extract | Capture claims, locators, dates, versions, and source quality. | Evidence ledger |
+| Verify | Look for contradictions, stale facts, and independent support. | Confidence labels |
+| Synthesize | Answer with evidence IDs and explicit uncertainty. | Cited report |
+
 ## Effort Levels
 
-- `quick`: 2-4 meaningful hops for low-risk orientation.
-- `standard`: 5-8 hops across at least three source classes.
-- `deep`: 9-14 hops for broad synthesis and due diligence.
-- `exhaustive`: 15+ hops for contested, high-stakes, or user-budgeted work.
+| Effort | Typical use | Target |
+|---|---|---|
+| `quick` | Low-risk orientation or sanity check | 2-4 meaningful hops |
+| `standard` | Normal researched answer | 5-8 hops, 3+ source classes |
+| `deep` | Literature review, due diligence, broad synthesis | 9-14 hops, 4+ source classes |
+| `exhaustive` | High-stakes, contested, or user-budgeted work | 15+ hops, 5+ source classes |
 
 Hop counts are planning targets, not quotas. Stop when high-impact claims are
 supported and remaining gaps are explicit.
 
+## Repository Layout
+
+```text
+.
+├── SKILL.md
+├── agents/
+│   └── openai.yaml
+├── docs/
+│   └── README.zh-CN.md
+├── references/
+│   ├── research-protocol.md
+│   ├── source-quality.md
+│   ├── query-playbook.md
+│   └── report-template.md
+├── scripts/
+│   └── research_ledger.py
+└── tests/
+    └── test_research_ledger.py
+```
+
 ## Development
 
 The ledger script uses only the Python standard library.
-
-On Windows, if `python` opens the Microsoft Store or exits without output, use
-`py -m` for module commands. For example:
-
-```powershell
-py -m unittest discover -s tests
-```
 
 Run tests:
 
@@ -129,25 +155,24 @@ Run a syntax check:
 python -m py_compile scripts/research_ledger.py
 ```
 
-## Installation As A Skill
+On Windows, if `python` opens the Microsoft Store or exits without output, use
+`py -m`:
 
-For Codex-style skill usage, place this directory under your skills directory
-and keep `SKILL.md` at the repository root. The skill body references files by
-relative path, so the directory structure should stay intact.
-
-Install from GitHub with the Codex skill installer:
-
-```bash
-python "$CODEX_HOME/skills/.system/skill-installer/scripts/install-skill-from-github.py" \
-  --repo B143KC47/deep-research-skill \
-  --path .
+```powershell
+py -m unittest discover -s tests
+py -m py_compile scripts\research_ledger.py
 ```
 
-Or clone directly:
+## Marketplace
 
-```bash
-git clone https://github.com/B143KC47/deep-research-skill.git
-```
+Submission notes and copy-paste listing text are in
+[MARKETPLACE_SUBMISSION.md](MARKETPLACE_SUBMISSION.md).
+
+Useful links:
+
+- GitHub repository: <https://github.com/B143KC47/deep-research-skill>
+- Raw skill file: <https://raw.githubusercontent.com/B143KC47/deep-research-skill/main/SKILL.md>
+- ClawHub slug: `b143kc47-deep-research`
 
 ## License
 
