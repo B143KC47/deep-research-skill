@@ -165,9 +165,6 @@ py -m py_compile scripts\research_ledger.py
 
 ## Marketplace
 
-Submission notes and copy-paste listing text are in
-[MARKETPLACE_SUBMISSION.md](MARKETPLACE_SUBMISSION.md).
-
 Useful links:
 
 - GitHub repository: <https://github.com/B143KC47/deep-research-skill>

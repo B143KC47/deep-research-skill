@@ -156,8 +156,6 @@ py -m py_compile scripts\research_ledger.py
 
 ## 市场提交
 
-市场提交说明和可复制文案在 [MARKETPLACE_SUBMISSION.md](../MARKETPLACE_SUBMISSION.md)。
-
 常用链接：
 
 - GitHub 仓库：<https://github.com/B143KC47/deep-research-skill>
