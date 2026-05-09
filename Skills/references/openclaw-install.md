@@ -37,7 +37,7 @@ Use deep-research for a literature review of retrieval-augmented generation meth
 ## Running the ledger manually
 
 ```bash
-python ~/.openclaw/skills/deep-research/scripts/research_ledger.py init \
+python -S ~/.openclaw/skills/deep-research/scripts/research_ledger.py init \
   --question "evaluate project X" \
   --effort deep \
   --out-dir research_runs

@@ -48,7 +48,7 @@ Use this to audit a research run or improve the skill after real use.
 
 Common warnings:
 
-- too few independent domains: find more corroboration or label uncertainty;
+- too few independent source families: find more corroboration or label uncertainty;
 - too few source classes: broaden sources or explain why a source class is irrelevant;
 - no counterevidence: run an adversarial search for contested topics;
 - no evidence IDs in final report: add evidence IDs for high-impact claims;

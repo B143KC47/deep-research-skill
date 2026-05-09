@@ -1,7 +1,7 @@
 ---
 name: deep-research
 description: use for adaptive deep research, broad but accurate information gathering, literature review, github and project due diligence, source graph investigation, cited reports, claim verification, or decisions that require current sources, cross-checking, counterevidence, and synthesis across web pages, academic papers, official docs, repositories, datasets, local files, and conflicting perspectives. do not use for simple lookups answerable from one or two obvious sources.
-version: 1.0.0
+version: 1.0.1
 metadata:
   openclaw:
     homepage: https://github.com/B143KC47/deep-research-skill
@@ -21,6 +21,18 @@ Run adaptive, evidence-backed research across broad source classes while keeping
 
 Use a loop inspired by interleaved retrieval and reasoning: plan the next information need, retrieve or inspect sources, extract evidence, update the source graph, then decide whether to broaden, deepen, verify, or stop. Keep private reasoning concise; record public, auditable artifacts: queries, sources, claims, limitations, and evidence IDs.
 
+## Runtime setup
+
+Use the bundled ledger script for nontrivial research so the run has auditable artifacts. Resolve the installed skill directory before running commands.
+
+In ChatGPT-style sandboxes, the skill directory is normally:
+
+```bash
+SKILL_DIR=/home/oai/skills/deep-research
+```
+
+If that path does not exist, locate the installed `deep-research` directory and set `SKILL_DIR` to that path. Store run artifacts in a writable task workspace, not inside the skill directory. In ChatGPT-style sandboxes, prefer `/mnt/data/research_runs`.
+
 ## Quick start
 
 1. Identify the deliverable: direct answer, research memo, literature review, project comparison, due diligence, timeline, implementation recommendation, or full cited report.
@@ -32,9 +44,9 @@ Use a loop inspired by interleaved retrieval and reasoning: plan the next inform
 3. Initialize a run:
 
 ```bash
-python {baseDir}/scripts/research_ledger.py init \
+python -S "$SKILL_DIR/scripts/research_ledger.py" init \
   --question "<user question>" \
-  --out-dir research_runs \
+  --out-dir /mnt/data/research_runs \
   --effort deep \
   --deliverable "evidence-backed research memo"
 ```
@@ -44,7 +56,7 @@ python {baseDir}/scripts/research_ledger.py init \
 6. Before finalizing, run:
 
 ```bash
-python {baseDir}/scripts/research_ledger.py lint --run-dir <run-dir>
+python -S "$SKILL_DIR/scripts/research_ledger.py" lint --run-dir <run-dir>
 ```
 
 7. Use [report-template.md](references/report-template.md). Cite evidence IDs such as `[E0001]` for high-impact claims.
@@ -70,6 +82,8 @@ For each high-impact final claim, include either:
 
 - one strong primary source plus one independent corroborating source, or
 - a clear label such as `single-source`, `likely`, `contested`, `weak`, `stale`, or `unknown`.
+
+When independence matters, record `--source-family`. A GitHub README and the same project's docs usually share one source family even if they are different URLs.
 
 ## Adaptive research workflow
 
@@ -102,7 +116,7 @@ Map evidence IDs to final claims. Separate fact, inference, opinion, contradicti
 Log a hop:
 
 ```bash
-python {baseDir}/scripts/research_ledger.py add-hop \
+python -S "$SKILL_DIR/scripts/research_ledger.py" add-hop \
   --run-dir <run-dir> \
   --hop 1 \
   --mode seed \
@@ -115,13 +129,14 @@ python {baseDir}/scripts/research_ledger.py add-hop \
 Log evidence:
 
 ```bash
-python {baseDir}/scripts/research_ledger.py add-evidence \
+python -S "$SKILL_DIR/scripts/research_ledger.py" add-evidence \
   --run-dir <run-dir> \
   --hop 1 \
   --source-id S001 \
   --title "<source title>" \
   --url-or-path "<url or local path>" \
   --publisher-or-owner "<publisher, owner, repo, or organization>" \
+  --source-family "<independent source family, such as organization, project, paper group, or dataset>" \
   --source-type paper \
   --quality-score 5 \
   --stance supports \
@@ -132,13 +147,13 @@ python {baseDir}/scripts/research_ledger.py add-evidence \
 Check status:
 
 ```bash
-python {baseDir}/scripts/research_ledger.py status --run-dir <run-dir>
+python -S "$SKILL_DIR/scripts/research_ledger.py" status --run-dir <run-dir>
 ```
 
 Lint before final report:
 
 ```bash
-python {baseDir}/scripts/research_ledger.py lint --run-dir <run-dir>
+python -S "$SKILL_DIR/scripts/research_ledger.py" lint --run-dir <run-dir>
 ```
 
 ## GitHub/project research rules

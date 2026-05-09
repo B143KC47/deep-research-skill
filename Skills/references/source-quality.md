@@ -14,7 +14,7 @@ Use `quality_score` from 1 to 5. Score the source for the specific claim, not fo
 
 ## Source independence
 
-Sources are independent only if they do not merely repeat the same underlying claim. A GitHub README and the same project's docs usually count as one source family. A paper and its official code repository may be separate source types but not fully independent for the claim that the authors made.
+Sources are independent only if they do not merely repeat the same underlying claim. Record `source_family` in the evidence ledger when independence matters. A GitHub README and the same project's docs usually count as one source family. A paper and its official code repository may be separate source types but not fully independent for the claim that the authors made.
 
 For high-impact claims, prefer:
 
