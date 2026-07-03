@@ -1,0 +1,93 @@
+positive_should_trigger:
+  - id: P1
+    prompt: "Research whether LangChain open_deep_research is production-ready for an internal analyst workflow. Include GitHub evidence, docs, releases, issues, license, and alternatives."
+    expected_behavior: "Activate deep-research; deep effort; inspect README/docs plus source/tests/releases/issues/license; include risks and evidence IDs."
+    automated: partly
+  - id: P2
+    prompt: "Write a literature review of Self-RAG, IRCoT, ReAct, STORM, and GraphRAG for building a research agent. Include papers, code/data, limitations, and open questions."
+    expected_behavior: "Activate; deep effort; cover paper route, code route, limitations, related work, and citation graph."
+    automated: partly
+  - id: P3
+    prompt: "Verify the claim: Project X is safer than Project Y because it uses GraphRAG. Find supporting and contradicting evidence."
+    expected_behavior: "Activate; standard/deep effort; search official docs, implementation, benchmarks, critiques; label uncertainty."
+    automated: partly
+  - id: P4
+    prompt: "Compare GPT Researcher, STORM, and LangChain open_deep_research for a build-vs-adopt decision."
+    expected_behavior: "Activate; deep effort; produce comparison matrix, source-quality notes, validation plan."
+    automated: partly
+  - id: P5
+    prompt: "I uploaded a whitepaper. Summarize it and check whether its claims are still current using web sources."
+    expected_behavior: "Activate; standard/deep effort; use local locators plus web verification and freshness labels."
+    automated: partly
+  - id: P6
+    prompt: "Audit this GitHub repo for maintenance risk, security advisories, release history, docs/source mismatch, and license risk."
+    expected_behavior: "Activate; deep effort; inspect repo artifacts beyond README; do not execute code."
+    automated: partly
+  - id: P7
+    prompt: "Produce a cited report on whether a benchmark result has replication failures or data contamination concerns."
+    expected_behavior: "Activate; deep effort; search benchmark, datasets, replications, critiques, counterevidence."
+    automated: partly
+  - id: P8
+    prompt: "Deep research: Is this vendor’s API suitable for production? Include official docs, changelog, GitHub SDK, incidents, and competing views."
+    expected_behavior: "Activate; deep/exhaustive depending risk; verify current docs and counterevidence."
+    automated: partly
+
+negative_should_not_trigger:
+  - id: N1
+    prompt: "Translate this paragraph into Chinese."
+    expected_behavior: "Do not activate; translate directly."
+    automated: yes
+  - id: N2
+    prompt: "Summarize the text I pasted in 5 bullets. Do not use external sources."
+    expected_behavior: "Do not activate; summarize only provided text."
+    automated: yes
+  - id: N3
+    prompt: "What is a literature review?"
+    expected_behavior: "Do not activate unless user asks for researched/cited overview."
+    automated: yes
+  - id: N4
+    prompt: "Brainstorm names for my research newsletter."
+    expected_behavior: "Do not activate; creative brainstorming."
+    automated: yes
+  - id: N5
+    prompt: "Fix grammar in this README sentence."
+    expected_behavior: "Do not activate; editing task."
+    automated: yes
+  - id: N6
+    prompt: "What does RAG stand for?"
+    expected_behavior: "Do not activate; simple lookup/general knowledge."
+    automated: yes
+  - id: N7
+    prompt: "Chat casually with me about why research is hard."
+    expected_behavior: "Do not activate; casual conversation."
+    automated: yes
+  - id: N8
+    prompt: "Based only on this uploaded PDF, extract the abstract and methods section."
+    expected_behavior: "Do not activate unless external verification/citations/currentness are requested."
+    automated: partly
+
+boundary_cases:
+  - id: B1
+    prompt: "Give me a quick answer: is GPT Researcher open source?"
+    expected_behavior: "Usually no activation; answer quickly from current source if browsing is otherwise required. No ledger unless due diligence is requested."
+    automated: human
+  - id: B2
+    prompt: "Is this current? Library X supports feature Y."
+    expected_behavior: "Activate quick/standard if current/version-sensitive; verify official docs/release notes; maybe no full report."
+    automated: human
+  - id: B3
+    prompt: "Summarize this paper and mention whether there are major follow-up papers."
+    expected_behavior: "Activate standard if follow-up/current literature is requested; otherwise summarize local paper only."
+    automated: human
+  - id: B4
+    prompt: "Compare these two tools, but keep it short."
+    expected_behavior: "Activate quick/standard if decision-grade comparison needs evidence; compress final output."
+    automated: human
+  - id: B5
+    prompt: "I need citations for this one claim."
+    expected_behavior: "Activate quick; run claim verification and counterevidence if contested."
+    automated: human
+  - id: B6
+    prompt: "Search the web for restaurants near me."
+    expected_behavior: "Do not activate deep-research; use ordinary search/recommendation behavior unless user asks for cited market-style analysis."
+    automated: human

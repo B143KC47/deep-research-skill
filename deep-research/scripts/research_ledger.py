@@ -36,14 +36,21 @@ EVIDENCE_FIELDS = [
     "timestamp_utc",
     "hop",
     "source_id",
+    "claim_id",
+    "claim_importance",
     "title",
     "url_or_path",
     "publisher_or_owner",
     "source_family",
     "date_or_version",
+    "accessed_utc",
     "source_type",
+    "source_subtype",
     "quality_score",
     "stance",
+    "independence_status",
+    "freshness_status",
+    "uncertainty_label",
     "claim",
     "quote_or_locator",
     "notes",
@@ -56,8 +63,57 @@ EFFORT_DEFAULTS = {
     "exhaustive": {"hop_target": 24, "source_diversity_target": 5, "min_independent_sources": 3},
 }
 
-PRIMARY_TYPES = {"paper", "official-doc", "github", "data", "local-file"}
+SOURCE_TYPES = [
+    "paper",
+    "official-doc",
+    "github",
+    "source-code",
+    "release-note",
+    "changelog",
+    "benchmark",
+    "dataset",
+    "data",
+    "security-advisory",
+    "standard",
+    "filing",
+    "news",
+    "blog",
+    "forum",
+    "local-file",
+    "other",
+]
+
+PRIMARY_TYPES = {
+    "paper",
+    "official-doc",
+    "github",
+    "source-code",
+    "release-note",
+    "changelog",
+    "benchmark",
+    "dataset",
+    "data",
+    "security-advisory",
+    "standard",
+    "filing",
+    "local-file",
+}
+
 COUNTER_STANCES = {"contradicts", "unclear"}
+CONTEXT_OR_COUNTER_STANCES = {"contradicts", "unclear", "context"}
+HIGH_IMPORTANCE = {"high", "central"}
+CLAIM_IMPORTANCE = ["low", "medium", "high", "central"]
+INDEPENDENCE_STATUS = ["independent", "same-family", "derivative", "single-source", "unknown", "not-applicable"]
+FRESHNESS_STATUS = ["current", "stale", "versioned", "undated", "unknown", "not-applicable"]
+UNCERTAINTY_LABELS = ["none", "single-source", "weak", "stale", "contested", "unknown", "not-applicable"]
+
+SECRET_PATTERNS = [
+    re.compile(r"(?i)(api[_-]?key|secret|token|password|passwd|private[_-]?key)\s*[:=]\s*['\"]?[A-Za-z0-9_./+=-]{12,}"),
+    re.compile(r"sk-[A-Za-z0-9]{20,}"),
+    re.compile(r"gh[pousr]_[A-Za-z0-9_]{20,}"),
+    re.compile(r"AKIA[0-9A-Z]{16}"),
+    re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"),
+]
 
 
 def now_utc() -> str:
@@ -90,6 +146,14 @@ def read_csv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(f))
 
 
+def write_csv(path: Path, fields: list[str], rows: list[dict[str, str]]) -> None:
+    with path.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({field: row.get(field, "") for field in fields})
+
+
 def append_csv(path: Path, fields: list[str], row: dict[str, str]) -> None:
     exists = path.exists() and path.stat().st_size > 0
     with path.open("a", encoding="utf-8", newline="") as f:
@@ -97,6 +161,19 @@ def append_csv(path: Path, fields: list[str], row: dict[str, str]) -> None:
         if not exists:
             writer.writeheader()
         writer.writerow({field: row.get(field, "") for field in fields})
+
+
+def migrate_csv_header(path: Path, fields: list[str]) -> None:
+    """Rewrite an existing CSV to the current field order if its header is old."""
+    if not path.exists() or path.stat().st_size == 0:
+        return
+    with path.open("r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        old_fields = reader.fieldnames or []
+        if old_fields == fields:
+            return
+        rows = list(reader)
+    write_csv(path, fields, rows)
 
 
 def positive_int(value: int | str | None, name: str) -> int | None:
@@ -160,6 +237,10 @@ def source_family_of(row: dict[str, str]) -> str:
     )
 
 
+def maybe_contains_secret(text: str) -> bool:
+    return any(pattern.search(text or "") for pattern in SECRET_PATTERNS)
+
+
 def initialize(args: argparse.Namespace) -> int:
     base = Path(args.out_dir).expanduser().resolve()
     run_dir = base / (args.name or f"{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{slugify(args.question)}")
@@ -203,8 +284,8 @@ def initialize(args: argparse.Namespace) -> int:
     }
     write_json(run_dir / "metadata.json", metadata)
 
-    (run_dir / "hop_ledger.csv").write_text(",".join(HOP_FIELDS) + "\n", encoding="utf-8")
-    (run_dir / "evidence_ledger.csv").write_text(",".join(EVIDENCE_FIELDS) + "\n", encoding="utf-8")
+    write_csv(run_dir / "hop_ledger.csv", HOP_FIELDS, [])
+    write_csv(run_dir / "evidence_ledger.csv", EVIDENCE_FIELDS, [])
     write_json(run_dir / "source_graph.json", {"nodes": [], "edges": []})
 
     plan = f"""# Research Plan
@@ -227,17 +308,20 @@ def initialize(args: argparse.Namespace) -> int:
 | aspect | why it matters | seed queries or sources | status |
 |---|---|---|---|
 | scope and definitions | avoid wrong entity or false premise |  | todo |
-| authoritative anchors | official docs, papers, standards, datasets, filings |  | todo |
-| implementation/project evidence | github, release notes, examples, issues, tests |  | todo |
+| official anchors | official docs, papers, standards, datasets, filings |  | todo |
+| academic evidence | papers, proceedings, official code/data, related work |  | todo |
+| implementation/project evidence | GitHub, release notes, examples, issues, tests |  | todo |
 | empirical evidence | benchmarks, evaluations, replications, real-world examples |  | todo |
-| counterevidence | limitations, failures, critiques, deprecated behavior |  | todo |
+| counterevidence and risks | limitations, failures, critiques, deprecated behavior, security |  | todo |
+| local-file evidence | exact file/page/line/table/cell locators, if provided |  | todo |
 | final verification | dates, versions, citations, unresolved gaps |  | todo |
 
 ## Candidate source classes
 - academic papers and venue pages
 - official docs or standards
-- github repositories and releases
-- datasets or benchmarks
+- GitHub repositories, source files, tests, examples, releases, and issues
+- datasets, benchmarks, leaderboards, and replications
+- security advisories, changelogs, and release notes
 - credible news or analysis
 - community issues/forums only as context
 - local/user-provided files
@@ -264,6 +348,7 @@ def initialize(args: argparse.Namespace) -> int:
         "## Executive summary\n\n"
         "## Direct answer\n\n"
         "## Key findings\n\n"
+        "## Claim verification matrix\n\n"
         "## Evidence table\n\n"
         "## Contradictions and uncertainty\n\n"
         "## Source-quality notes\n\n"
@@ -305,6 +390,7 @@ def update_graph(run_dir: Path, node: dict, edges: list[dict]) -> None:
 def add_hop(args: argparse.Namespace) -> int:
     run_dir = Path(args.run_dir).expanduser().resolve()
     metadata = load_metadata(run_dir)
+    migrate_csv_header(run_dir / "hop_ledger.csv", HOP_FIELDS)
     hard_max = metadata.get("hard_max_hops")
     hop = positive_int(args.hop, "hop")
     if hard_max is not None and hop > int(hard_max):
@@ -359,6 +445,7 @@ def add_hop(args: argparse.Namespace) -> int:
 def add_evidence(args: argparse.Namespace) -> int:
     run_dir = Path(args.run_dir).expanduser().resolve()
     load_metadata(run_dir)
+    migrate_csv_header(run_dir / "evidence_ledger.csv", EVIDENCE_FIELDS)
     hop = positive_int(args.hop, "hop")
     hop_rows = read_csv(run_dir / "hop_ledger.csv")
     existing_hops = parse_hop_set(hop_rows)
@@ -375,19 +462,28 @@ def add_evidence(args: argparse.Namespace) -> int:
         raise SystemExit("quality_score must be an integer 1-5")
 
     source_family = (args.source_family or infer_source_family(args.publisher_or_owner, args.url_or_path)).strip()
+    accessed_utc = args.accessed_utc or now_utc()
+    uncertainty_label = args.uncertainty_label or "none"
     row = {
         "evidence_id": evidence_id,
         "timestamp_utc": now_utc(),
         "hop": str(hop),
         "source_id": args.source_id,
+        "claim_id": args.claim_id or "",
+        "claim_importance": args.claim_importance,
         "title": args.title,
         "url_or_path": args.url_or_path,
         "publisher_or_owner": args.publisher_or_owner or "",
         "source_family": source_family,
         "date_or_version": args.date_or_version or "",
+        "accessed_utc": accessed_utc,
         "source_type": args.source_type,
+        "source_subtype": args.source_subtype or "",
         "quality_score": quality,
         "stance": args.stance,
+        "independence_status": args.independence_status,
+        "freshness_status": args.freshness_status,
+        "uncertainty_label": uncertainty_label,
         "claim": args.claim,
         "quote_or_locator": args.quote_or_locator or "",
         "notes": args.notes or "",
@@ -400,6 +496,7 @@ def add_evidence(args: argparse.Namespace) -> int:
         "label": args.title[:120],
         "url_or_path": args.url_or_path,
         "source_type": args.source_type,
+        "source_subtype": args.source_subtype or "",
         "source_family": source_family,
         "quality_score": quality,
     }
@@ -407,6 +504,8 @@ def add_evidence(args: argparse.Namespace) -> int:
         "id": evidence_id,
         "type": "evidence",
         "label": args.claim[:120],
+        "claim_id": args.claim_id or "",
+        "claim_importance": args.claim_importance,
         "stance": args.stance,
     }
     update_graph(
@@ -422,13 +521,23 @@ def add_evidence(args: argparse.Namespace) -> int:
     return 0
 
 
+def _quality_int(row: dict[str, str]) -> int:
+    try:
+        return int(row.get("quality_score") or "0")
+    except ValueError:
+        return 0
+
+
 def lint(args: argparse.Namespace) -> int:
     run_dir = Path(args.run_dir).expanduser().resolve()
     metadata = load_metadata(run_dir)
+    migrate_csv_header(run_dir / "hop_ledger.csv", HOP_FIELDS)
+    migrate_csv_header(run_dir / "evidence_ledger.csv", EVIDENCE_FIELDS)
     hard_max = metadata.get("hard_max_hops")
     hop_target = int(metadata.get("hop_target") or 0)
     source_diversity_target = int(metadata.get("source_diversity_target") or 0)
     min_sources = int(metadata.get("min_independent_sources") or 2)
+    effort = metadata.get("effort", "standard")
     hop_rows = read_csv(run_dir / "hop_ledger.csv")
     evidence_rows = read_csv(run_dir / "evidence_ledger.csv")
 
@@ -437,6 +546,7 @@ def lint(args: argparse.Namespace) -> int:
 
     seen_hops: set[int] = set()
     duplicate_hops: set[int] = set()
+    all_hops = parse_hop_set(hop_rows)
     for row in hop_rows:
         raw_hop = row.get("hop", "")
         try:
@@ -464,7 +574,7 @@ def lint(args: argparse.Namespace) -> int:
                     errors.append(f"hop {hop_num} has invalid parent_hop={parent}")
                 elif parent == hop_num:
                     errors.append(f"hop {hop_num} cannot be its own parent")
-                elif parent not in seen_hops and parent not in parse_hop_set(hop_rows):
+                elif parent not in all_hops:
                     errors.append(f"hop {hop_num} references missing parent_hop={parent}")
         for field in ["tool_or_source", "query_or_action", "result_summary", "status"]:
             if not row.get(field, "").strip():
@@ -479,6 +589,9 @@ def lint(args: argparse.Namespace) -> int:
     primary_count = 0
     counter_count = 0
     quality_counts = {str(i): 0 for i in range(1, 6)}
+    claim_groups: dict[str, list[dict[str, str]]] = {}
+    high_claim_rows: list[dict[str, str]] = []
+
     for row in evidence_rows:
         evidence_id = row.get("evidence_id", "").strip()
         if not evidence_id:
@@ -514,13 +627,57 @@ def lint(args: argparse.Namespace) -> int:
             primary_count += 1
         if row.get("stance") in COUNTER_STANCES:
             counter_count += 1
-        if row.get("stance") == "supports":
-            try:
-                q_number = int(row.get("quality_score") or "0")
-            except ValueError:
-                q_number = 0
-            if q_number >= 3:
-                support_families.add(source_family_of(row))
+        if row.get("stance") == "supports" and _quality_int(row) >= 3:
+            family = source_family_of(row)
+            if family:
+                support_families.add(family)
+
+        if row.get("claim_id"):
+            claim_groups.setdefault(row.get("claim_id", ""), []).append(row)
+
+        importance = (row.get("claim_importance") or "medium").strip()
+        if importance not in CLAIM_IMPORTANCE:
+            warnings.append(f"{evidence_id} has unknown claim_importance={importance}")
+        if importance in HIGH_IMPORTANCE:
+            high_claim_rows.append(row)
+            if not row.get("claim_id", "").strip():
+                warnings.append(f"{evidence_id} is high-impact but missing claim_id")
+            if not row.get("quote_or_locator", "").strip():
+                warnings.append(f"{evidence_id} is high-impact but missing quote_or_locator")
+            if not row.get("source_family", "").strip():
+                warnings.append(f"{evidence_id} is high-impact but missing source_family")
+            if not row.get("date_or_version", "").strip() and row.get("freshness_status") not in {"not-applicable", "stale"}:
+                warnings.append(f"{evidence_id} is high-impact but missing date_or_version")
+            if row.get("freshness_status") in {"", "unknown", "undated"}:
+                warnings.append(f"{evidence_id} is high-impact but has unresolved freshness_status")
+            if row.get("independence_status") in {"", "unknown"}:
+                warnings.append(f"{evidence_id} is high-impact but has unknown independence_status")
+
+        if row.get("freshness_status") == "current" and not row.get("date_or_version", "").strip():
+            warnings.append(f"{evidence_id} is marked current but missing date_or_version")
+        if not row.get("quote_or_locator", "").strip():
+            warnings.append(f"{evidence_id} missing quote_or_locator")
+
+        combined = "\n".join(row.get(field, "") for field in EVIDENCE_FIELDS)
+        if maybe_contains_secret(combined):
+            warnings.append(f"{evidence_id} may contain a secret/token; redact before sharing")
+
+    for claim_id, rows in sorted(claim_groups.items()):
+        if not any((row.get("claim_importance") or "medium") in HIGH_IMPORTANCE for row in rows):
+            continue
+        support_fams = {
+            source_family_of(row)
+            for row in rows
+            if row.get("stance") == "supports" and _quality_int(row) >= 3 and source_family_of(row)
+        }
+        if len(support_fams) < min_sources:
+            warnings.append(
+                f"claim {claim_id} has only {len(support_fams)} independent support source families with quality>=3; target is {min_sources}"
+            )
+        if not any(row.get("stance") in CONTEXT_OR_COUNTER_STANCES for row in rows):
+            warnings.append(f"claim {claim_id} has no logged context/counterevidence row; verify or label not-applicable")
+        if not any(row.get("freshness_status") not in {"", "unknown", "undated"} for row in rows):
+            warnings.append(f"claim {claim_id} has unresolved freshness across all evidence rows")
 
     if evidence_rows and len(support_families) < min_sources:
         warnings.append(
@@ -532,8 +689,10 @@ def lint(args: argparse.Namespace) -> int:
         )
     if evidence_rows and primary_count == 0:
         warnings.append("no primary or near-primary evidence recorded")
-    if evidence_rows and counter_count == 0:
+    if evidence_rows and counter_count == 0 and effort in {"standard", "deep", "exhaustive"}:
         warnings.append("no contradictory/unclear evidence recorded; run an adversarial search if the topic is debatable")
+    if high_claim_rows and not any(row.get("claim_id") for row in high_claim_rows):
+        warnings.append("high-impact evidence exists but no high-impact row has a claim_id")
     if hop_target and len(hop_rows) > hop_target:
         warnings.append(
             f"hop count {len(hop_rows)} exceeds target {hop_target}; this is fine only if later hops filled material gaps"
@@ -558,6 +717,7 @@ def lint(args: argparse.Namespace) -> int:
         "evidence_count": len(evidence_rows),
         "source_types": sorted(source_types),
         "support_source_families_quality_ge_3": sorted(f for f in support_families if f),
+        "high_impact_evidence_count": len(high_claim_rows),
         "quality_counts": quality_counts,
         "errors": errors,
         "warnings": warnings,
@@ -569,6 +729,8 @@ def lint(args: argparse.Namespace) -> int:
 def status(args: argparse.Namespace) -> int:
     run_dir = Path(args.run_dir).expanduser().resolve()
     metadata = load_metadata(run_dir)
+    migrate_csv_header(run_dir / "hop_ledger.csv", HOP_FIELDS)
+    migrate_csv_header(run_dir / "evidence_ledger.csv", EVIDENCE_FIELDS)
     hop_rows = read_csv(run_dir / "hop_ledger.csv")
     evidence_rows = read_csv(run_dir / "evidence_ledger.csv")
     hop_target = int(metadata.get("hop_target") or 0)
@@ -576,6 +738,7 @@ def status(args: argparse.Namespace) -> int:
     domains = sorted({domain_of(row.get("url_or_path", "")) for row in evidence_rows if row.get("url_or_path")})
     source_families = sorted({source_family_of(row) for row in evidence_rows if source_family_of(row)})
     source_types = sorted({row.get("source_type", "") for row in evidence_rows if row.get("source_type")})
+    claim_ids = sorted({row.get("claim_id", "") for row in evidence_rows if row.get("claim_id")})
     latest_hop = hop_rows[-1] if hop_rows else None
     suggested = "select next frontier or verify a high-impact claim"
     if hop_target and len(hop_rows) >= max(2, round(hop_target / 3)) and len(hop_rows) < round(2 * hop_target / 3):
@@ -588,6 +751,7 @@ def status(args: argparse.Namespace) -> int:
         "hop_count": len(hop_rows),
         "hop_target_remaining": target_remaining,
         "evidence_count": len(evidence_rows),
+        "claim_ids": claim_ids,
         "source_domains": domains,
         "source_families": source_families,
         "source_types": source_types,
@@ -640,18 +804,21 @@ def build_parser() -> argparse.ArgumentParser:
     ev_p.add_argument("--evidence-id")
     ev_p.add_argument("--hop", required=True, type=int)
     ev_p.add_argument("--source-id", required=True)
+    ev_p.add_argument("--claim-id")
+    ev_p.add_argument("--claim-importance", choices=CLAIM_IMPORTANCE, default="medium")
     ev_p.add_argument("--title", required=True)
     ev_p.add_argument("--url-or-path", required=True)
     ev_p.add_argument("--publisher-or-owner")
     ev_p.add_argument("--source-family")
     ev_p.add_argument("--date-or-version")
-    ev_p.add_argument(
-        "--source-type",
-        choices=["paper", "official-doc", "github", "data", "news", "blog", "forum", "local-file", "other"],
-        required=True,
-    )
+    ev_p.add_argument("--accessed-utc")
+    ev_p.add_argument("--source-type", choices=SOURCE_TYPES, required=True)
+    ev_p.add_argument("--source-subtype")
     ev_p.add_argument("--quality-score", type=int, required=True)
     ev_p.add_argument("--stance", choices=["supports", "contradicts", "context", "unclear"], required=True)
+    ev_p.add_argument("--independence-status", choices=INDEPENDENCE_STATUS, default="unknown")
+    ev_p.add_argument("--freshness-status", choices=FRESHNESS_STATUS, default="unknown")
+    ev_p.add_argument("--uncertainty-label", choices=UNCERTAINTY_LABELS)
     ev_p.add_argument("--claim", required=True)
     ev_p.add_argument("--quote-or-locator")
     ev_p.add_argument("--notes")

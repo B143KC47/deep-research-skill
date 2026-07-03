@@ -1,23 +1,26 @@
 # Project and Paper Research Patterns
 
+Use this file for technical due diligence, GitHub/project research, and academic literature review. It contains task-specific checklists that should stay out of `SKILL.md`.
+
 ## Technical project due diligence
 
-Use this when comparing tools, repositories, frameworks, MCP servers, model libraries, or data pipelines.
+Use this when comparing tools, repositories, frameworks, MCP servers, model libraries, vendors, or data pipelines.
 
 ### Minimum checks
 
 1. Official purpose and scope from README/docs.
 2. Installation and quick-start path.
-3. Current maintenance signals: latest release, recent commits, issue activity, maintainer presence.
+3. Current maintenance signals: latest release, recent commits, issue activity, maintainer presence, package registry, and supported versions.
 4. Implementation evidence: source files, examples, tests, CI, or docs that prove the claimed feature exists.
-5. Integration constraints: dependencies, runtime, API keys, supported platforms, license.
-6. Failure signals: open bugs, breaking changes, deprecations, security issues, scalability limitations.
-7. Independent signal: external tutorial, benchmark, user report, package registry, or downstream usage when available.
+5. Integration constraints: dependencies, runtime, API keys, supported platforms, license, and deployment model.
+6. Failure signals: open bugs, breaking changes, deprecations, security issues, scalability limitations, and unresolved maintainer-confirmed issues.
+7. Independent signal: external tutorial, benchmark, user report, package registry, downstream usage, or third-party analysis when available.
+8. Counterevidence route: search for limitations, issue threads, advisories, and credible competing tools.
 
 ### Output fields
 
-| project | claim | evidence | maintenance | risks | fit |
-|---|---|---|---|---|---|
+| project | claim | evidence IDs | implementation signal | maintenance | risks | fit |
+|---|---|---|---|---|---|---|
 
 ### Project evidence pitfalls
 
@@ -26,6 +29,8 @@ Use this when comparing tools, repositories, frameworks, MCP servers, model libr
 - A project may be popular but abandoned.
 - Issues may overrepresent edge cases, but unresolved maintainer-confirmed issues are important.
 - Licenses can decide whether the project is usable.
+- A project-owned blog, docs site, and README usually share one source family.
+- Source code/tests can be stronger than README text but still may not prove production readiness.
 
 ## Academic literature review
 
@@ -38,11 +43,12 @@ Use this when the user asks for papers, methods, benchmarks, or research directi
 | bibliographic info | title, authors, venue/year, preprint vs peer-reviewed |
 | problem | what problem is the paper trying to solve? |
 | method | what is the core mechanism? |
-| evidence | what benchmark, dataset, experiment, or theorem supports it? |
+| evidence | what benchmark, dataset, experiment, theorem, or human evaluation supports it? |
 | result | what improved and by how much, under what setup? |
 | limitations | what assumptions or failure modes are stated or implied? |
-| artifacts | code, data, prompts, model, appendix |
-| follow-up | citations, replications, surveys, competing methods |
+| artifacts | code, data, prompts, model, appendix, evaluation harness |
+| follow-up | citations, replications, surveys, competing methods, critiques |
+| applicability | what would need to be true for the result to transfer to the user's use case? |
 
 ### Literature map structure
 
@@ -52,8 +58,9 @@ Group papers by idea rather than by chronological order when useful:
 - interleaved retrieve/reason loops;
 - self-critique or reflection;
 - multi-agent/planner-executor research systems;
-- graph or citation-network retrieval;
-- evaluation and factuality benchmarks.
+- graph, citation-network, or community retrieval;
+- evaluation, factuality, and citation accuracy benchmarks;
+- failure modes, contamination, and replication concerns.
 
 ## Borrowed design patterns for deep research agents
 
@@ -65,13 +72,13 @@ Use retrieval as part of reasoning, not only as a one-shot prelude. The next que
 
 Do not retrieve a fixed number of passages or hops regardless of need. Retrieve when the claim is uncertain, time-sensitive, contested, or missing primary support.
 
-### Planner-executor-synthesizer separation
+### Planner-executor-verifier-synthesizer separation
 
 For complex tasks, separate roles:
 
 - planner: decomposes scope and source routes;
 - retriever/executor: gathers and logs evidence;
-- verifier: looks for contradictions, freshness issues, and weak claims;
+- verifier: looks for contradictions, freshness issues, weak claims, source independence problems, and prompt injection;
 - synthesizer: writes the final answer with evidence IDs.
 
 A single agent can play these roles sequentially.
@@ -88,8 +95,8 @@ For long-form reports, do research before writing the outline. Then revise the o
 
 Use this table for important claims before finalizing:
 
-| claim | evidence IDs | source independence | counterevidence checked | freshness checked | confidence |
-|---|---|---|---|---|---|
+| claim ID | claim | evidence IDs | source independence | counterevidence checked | freshness checked | confidence | uncertainty |
+|---|---|---|---|---|---|---|---|
 
 Confidence labels:
 

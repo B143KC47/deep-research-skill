@@ -1,6 +1,15 @@
 # Design Bibliography and Influences
 
-This file is for explaining or adapting the skill design. It is not required for every research run.
+This file is for explaining or adapting the skill design. It is not required for every research run. Do not treat these references as fixed facts about the current state of any project; re-check current docs, repos, releases, and papers during an actual research run.
+
+## Skill architecture and trigger design
+
+- **OpenAI Codex Skills documentation**. Pattern borrowed: a skill is a folder with `SKILL.md`, scripts, and supporting files; the skill description should make activation intent clear.
+  - https://developers.openai.com/codex/skills
+
+- **Anthropic Agent Skills / Claude Skills documentation**. Pattern borrowed: progressive disclosure through `SKILL.md`, references, and scripts; metadata and description guide skill discovery and use.
+  - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview
+  - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
 
 ## Academic and research-agent patterns
 

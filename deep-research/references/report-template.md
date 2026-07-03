@@ -6,7 +6,7 @@ Use this as a default. Adapt section names to the user's requested deliverable.
 # [Research title]
 
 ## Executive summary
-[3-7 bullets or a short paragraph. State the answer first. Include confidence and the most important uncertainty.]
+[3-7 bullets or a short paragraph. State the answer first. Include confidence and the most important uncertainty. Use evidence IDs for high-impact claims.]
 
 ## Direct answer
 [Answer the user's core question. Use evidence IDs like [E0001] for high-impact claims.]
@@ -16,15 +16,21 @@ Use this as a default. Adapt section names to the user's requested deliverable.
 ### 1. [Finding]
 - Claim: [specific claim] [E0001]
 - Why it matters: [decision relevance]
-- Confidence: high / medium / low
+- Confidence: high / medium / low / unknown
+- Uncertainty: none / single-source / weak / stale / contested / unknown
 
 ### 2. [Finding]
 ...
 
+## Claim verification matrix
+| claim ID | claim | evidence IDs | source independence | counterevidence | freshness | confidence | uncertainty |
+|---|---|---|---|---|---|---|---|
+| C001 | ... | [E0001], [E0002] | independent / same-family / unknown | checked / not found / contested | current / versioned / stale / unknown | high / medium / low / unknown | ... |
+
 ## Evidence table
-| id | source | type | quality | stance | claim supported or contradicted |
-|---|---|---:|---:|---|---|
-| E0001 | [title / publisher] | paper | 5 | supports | ... |
+| id | source | type | quality | stance | date/version | locator | claim supported or contradicted |
+|---|---|---:|---:|---|---|---|---|
+| E0001 | [title / publisher] | paper | 5 | supports | 2024 / v1.2 / commit | p. 4 table 2 | ... |
 
 ## Comparison matrix
 [Use only when comparing papers, tools, repos, vendors, methods, or options.]
@@ -45,7 +51,7 @@ Use this as a default. Adapt section names to the user's requested deliverable.
 - Hop count: [n]
 - Source classes searched: [papers, GitHub, official docs, etc.]
 - Counterevidence searched: yes/no; summary
-- Files or tools used: [if relevant]
+- Local files used: [if relevant, with locators]
 - Remaining open questions: [list]
 ```
 
@@ -93,8 +99,8 @@ Add:
 
 ```markdown
 ## Literature map
-| cluster | representative papers | core idea | limitations |
-|---|---|---|---|
+| cluster | representative papers | core idea | evidence | limitations |
+|---|---|---|---|---|
 
 ## Open research questions
 [What remains unresolved across the literature]
